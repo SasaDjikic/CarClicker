@@ -28,7 +28,7 @@ public class UpgradeButton : MonoBehaviour
         if (buyButton != null)
             buyButton.onClick.AddListener(OnBuyClick);
 
-        _upgradeSystem.OnUpgradePurchased.AddListener(UpdateDisplay);
+        _upgradeSystem.OnUpgradePurchased.AddListener((id, level) => UpdateDisplay());
         _upgradeSystem.OnMultiplierChanged.AddListener(UpdateDisplay);
 
         UpdateDisplay();
