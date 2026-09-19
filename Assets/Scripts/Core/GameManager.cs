@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     public InputManager InputManager { get; private set; }
     public CarController CarController { get; private set; }
     public UIManager UIManager { get; private set; }
+    public UpgradeSystem UpgradeSystem { get; private set; }
 
     private void Awake()
     {
@@ -28,6 +29,7 @@ public class GameManager : MonoBehaviour
     {
         CurrencySystem = GetComponent<CurrencySystem>();
         InputManager = GetComponent<InputManager>();
+        UpgradeSystem = GetComponent<UpgradeSystem>();
         CarController = FindFirstObjectByType<CarController>();
         UIManager = FindFirstObjectByType<UIManager>();
 
@@ -35,6 +37,8 @@ public class GameManager : MonoBehaviour
             CurrencySystem = gameObject.AddComponent<CurrencySystem>();
         if (InputManager == null)
             InputManager = gameObject.AddComponent<InputManager>();
+        if (UpgradeSystem == null)
+            UpgradeSystem = gameObject.AddComponent<UpgradeSystem>();
         if (CarController == null)
             Debug.LogError("CarController not found in scene!");
         if (UIManager == null)
