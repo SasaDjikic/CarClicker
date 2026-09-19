@@ -1,10 +1,4 @@
 using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor.ProBuilder;
-using UnityEditor.ProBuilder.AssetUtils;
-using UnityEngine.ProBuilder;
-using UnityEngine.ProBuilder.MeshOperations;
-#endif
 
 public class ProBuilderCarGenerator : MonoBehaviour
 {
@@ -24,11 +18,10 @@ public class ProBuilderCarGenerator : MonoBehaviour
         public float scale = 1f;
     }
 
-    [SerializeField] private CarConfig carConfig = new CarConfig();
+    public CarConfig carConfig = new CarConfig();
 
     public GameObject GenerateCar()
     {
-        #if UNITY_EDITOR
         GameObject carRoot = new GameObject("Car_" + carConfig.type);
         carRoot.transform.position = Vector3.zero;
 
@@ -49,198 +42,156 @@ public class ProBuilderCarGenerator : MonoBehaviour
         AddCarController(carRoot);
 
         return carRoot;
-        #else
-        Debug.LogError("ProBuilder Car Generator only works in Editor!");
-        return null;
-        #endif
     }
 
-    #if UNITY_EDITOR
     private void GenerateBasicCar(GameObject carRoot)
     {
-        // Chassis
-        GameObject chassis = CreateChassis(carRoot, new Vector3(2f, 0.8f, 4f), Color.red);
-
-        // Cabin
-        GameObject cabin = CreateCabin(carRoot, new Vector3(1.6f, 0.6f, 1.8f), new Vector3(0, 0.6f, -0.3f), Color.red);
-
-        // Wheels
+        CreateChassis(carRoot, new Vector3(2f, 0.8f, 4f), Vector3.zero, Color.red);
+        CreateCabin(carRoot, new Vector3(1.6f, 0.6f, 1.8f), new Vector3(0, 0.6f, -0.3f), Color.red);
         CreateWheels(carRoot, 1.4f, 0.5f, 3f);
-
-        // Windows
         CreateWindows(carRoot);
-
         carRoot.tag = "ClickZone";
     }
 
     private void GenerateSportCar(GameObject carRoot)
     {
-        // Chassis (longer, lower)
-        GameObject chassis = CreateChassis(carRoot, new Vector3(2.2f, 0.7f, 4.5f), Color.blue);
-
-        // Cabin (smaller, sportier)
-        GameObject cabin = CreateCabin(carRoot, new Vector3(1.8f, 0.5f, 1.5f), new Vector3(0, 0.5f, -0.2f), Color.blue);
-
-        // Spoiler
+        CreateChassis(carRoot, new Vector3(2.2f, 0.7f, 4.5f), Vector3.zero, Color.blue);
+        CreateCabin(carRoot, new Vector3(1.8f, 0.5f, 1.5f), new Vector3(0, 0.5f, -0.2f), Color.blue);
         CreateSpoiler(carRoot);
-
-        // Wheels (bigger)
         CreateWheels(carRoot, 1.6f, 0.6f, 3.2f);
-
-        // Windows
         CreateWindows(carRoot);
-
         carRoot.tag = "ClickZone";
     }
 
     private void GenerateLuxuryCar(GameObject carRoot)
     {
-        // Chassis (wide, tall)
-        GameObject chassis = CreateChassis(carRoot, new Vector3(2.4f, 0.9f, 4.2f), Color.yellow);
-
-        // Cabin (larger)
-        GameObject cabin = CreateCabin(carRoot, new Vector3(2f, 0.7f, 2f), new Vector3(0, 0.7f, -0.3f), Color.yellow);
-
-        // Wheels (luxurious)
+        CreateChassis(carRoot, new Vector3(2.4f, 0.9f, 4.2f), Vector3.zero, Color.yellow);
+        CreateCabin(carRoot, new Vector3(2f, 0.7f, 2f), new Vector3(0, 0.7f, -0.3f), Color.yellow);
         CreateWheels(carRoot, 1.5f, 0.55f, 3.1f);
-
-        // Windows (larger)
         CreateWindows(carRoot, 1.8f);
-
-        // Bumpers (luxury details)
         CreateBumpers(carRoot);
-
         carRoot.tag = "ClickZone";
     }
 
-    private GameObject CreateChassis(GameObject parent, Vector3 size, Color color)
+    private void CreateChassis(GameObject parent, Vector3 size, Vector3 position, Color color)
     {
-        GameObject chassis = new GameObject("Chassis");
+        GameObject chassis = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        chassis.name = "Chassis";
         chassis.transform.parent = parent.transform;
-        chassis.transform.localPosition = Vector3.zero;
+        chassis.transform.localPosition = position;
+        chassis.transform.localScale = size * carConfig.scale;
 
-        var pb = ProBuilderMesh.Create(chassis, PrimitiveType.Cube);
-        pb.transform.localScale = size * carConfig.scale;
-
-        ApplyMaterial(pb, color);
-        pb.Refresh();
-
-        return chassis;
+        RemoveCollider(chassis);
+        ApplyMaterial(chassis, color);
     }
 
-    private GameObject CreateCabin(GameObject parent, Vector3 size, Vector3 position, Color color)
+    private void CreateCabin(GameObject parent, Vector3 size, Vector3 position, Color color)
     {
-        GameObject cabin = new GameObject("Cabin");
+        GameObject cabin = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        cabin.name = "Cabin";
         cabin.transform.parent = parent.transform;
         cabin.transform.localPosition = position * carConfig.scale;
+        cabin.transform.localScale = size * carConfig.scale;
 
-        var pb = ProBuilderMesh.Create(cabin, PrimitiveType.Cube);
-        pb.transform.localScale = size * carConfig.scale;
-
-        ApplyMaterial(pb, color);
-        pb.Refresh();
-
-        return cabin;
+        RemoveCollider(cabin);
+        ApplyMaterial(cabin, color);
     }
 
     private void CreateWheels(GameObject parent, float wheelRadius, float wheelWidth, float wheelDistance)
     {
         Vector3[] wheelPositions = new Vector3[]
         {
-            new Vector3(wheelDistance / 2f, 0, wheelDistance / 2f),      // Front Right
-            new Vector3(-wheelDistance / 2f, 0, wheelDistance / 2f),     // Front Left
-            new Vector3(wheelDistance / 2f, 0, -wheelDistance / 2f),     // Rear Right
-            new Vector3(-wheelDistance / 2f, 0, -wheelDistance / 2f)     // Rear Left
+            new Vector3(wheelDistance / 2f, 0, wheelDistance / 2f),
+            new Vector3(-wheelDistance / 2f, 0, wheelDistance / 2f),
+            new Vector3(wheelDistance / 2f, 0, -wheelDistance / 2f),
+            new Vector3(-wheelDistance / 2f, 0, -wheelDistance / 2f)
         };
 
         string[] wheelNames = { "WheelFR", "WheelFL", "WheelRR", "WheelRL" };
 
         for (int i = 0; i < wheelPositions.Length; i++)
         {
-            GameObject wheel = new GameObject(wheelNames[i]);
+            GameObject wheel = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            wheel.name = wheelNames[i];
             wheel.transform.parent = parent.transform;
             wheel.transform.localPosition = wheelPositions[i] * carConfig.scale;
             wheel.transform.localRotation = Quaternion.Euler(0, 0, 90);
+            wheel.transform.localScale = new Vector3(wheelWidth, wheelRadius, wheelRadius) * carConfig.scale;
 
-            var pb = ProBuilderMesh.Create(wheel, PrimitiveType.Cylinder);
-            pb.transform.localScale = new Vector3(wheelWidth, wheelRadius, wheelRadius) * carConfig.scale;
-
-            ApplyMaterial(pb, carConfig.wheelColor);
-            pb.Refresh();
+            RemoveCollider(wheel);
+            ApplyMaterial(wheel, carConfig.wheelColor);
         }
     }
 
     private void CreateWindows(GameObject parent, float windowScale = 1f)
     {
-        // Front window
-        GameObject frontWindow = new GameObject("WindowFront");
+        GameObject frontWindow = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        frontWindow.name = "WindowFront";
         frontWindow.transform.parent = parent.transform;
         frontWindow.transform.localPosition = new Vector3(0, 0.8f, 1.2f) * carConfig.scale;
+        frontWindow.transform.localScale = new Vector3(1.4f * windowScale, 0.6f, 0.2f) * carConfig.scale;
 
-        var pbFront = ProBuilderMesh.Create(frontWindow, PrimitiveType.Cube);
-        pbFront.transform.localScale = new Vector3(1.4f * windowScale, 0.6f, 0.2f) * carConfig.scale;
+        RemoveCollider(frontWindow);
+        ApplyGlassMaterial(frontWindow);
 
-        ApplyGlassMaterial(pbFront);
-        pbFront.Refresh();
-
-        // Rear window
-        GameObject rearWindow = new GameObject("WindowRear");
+        GameObject rearWindow = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        rearWindow.name = "WindowRear";
         rearWindow.transform.parent = parent.transform;
         rearWindow.transform.localPosition = new Vector3(0, 0.8f, -1f) * carConfig.scale;
+        rearWindow.transform.localScale = new Vector3(1.2f * windowScale, 0.5f, 0.2f) * carConfig.scale;
 
-        var pbRear = ProBuilderMesh.Create(rearWindow, PrimitiveType.Cube);
-        pbRear.transform.localScale = new Vector3(1.2f * windowScale, 0.5f, 0.2f) * carConfig.scale;
-
-        ApplyGlassMaterial(pbRear);
-        pbRear.Refresh();
+        RemoveCollider(rearWindow);
+        ApplyGlassMaterial(rearWindow);
     }
 
     private void CreateSpoiler(GameObject parent)
     {
-        GameObject spoiler = new GameObject("Spoiler");
+        GameObject spoiler = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        spoiler.name = "Spoiler";
         spoiler.transform.parent = parent.transform;
         spoiler.transform.localPosition = new Vector3(0, 0.5f, -2.3f) * carConfig.scale;
+        spoiler.transform.localScale = new Vector3(2f, 0.8f, 0.3f) * carConfig.scale;
 
-        var pb = ProBuilderMesh.Create(spoiler, PrimitiveType.Cube);
-        pb.transform.localScale = new Vector3(2f, 0.8f, 0.3f) * carConfig.scale;
-
-        ApplyMaterial(pb, carConfig.bodyColor);
-        pb.Refresh();
+        RemoveCollider(spoiler);
+        ApplyMaterial(spoiler, carConfig.bodyColor);
     }
 
     private void CreateBumpers(GameObject parent)
     {
-        // Front bumper
-        GameObject frontBumper = new GameObject("BumperFront");
+        GameObject frontBumper = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        frontBumper.name = "BumperFront";
         frontBumper.transform.parent = parent.transform;
         frontBumper.transform.localPosition = new Vector3(0, 0.3f, 2.2f) * carConfig.scale;
+        frontBumper.transform.localScale = new Vector3(2.4f, 0.3f, 0.2f) * carConfig.scale;
 
-        var pbFront = ProBuilderMesh.Create(frontBumper, PrimitiveType.Cube);
-        pbFront.transform.localScale = new Vector3(2.4f, 0.3f, 0.2f) * carConfig.scale;
+        RemoveCollider(frontBumper);
+        ApplyMaterial(frontBumper, Color.gray);
 
-        ApplyMaterial(pbFront, Color.gray);
-        pbFront.Refresh();
-
-        // Rear bumper
-        GameObject rearBumper = new GameObject("BumperRear");
+        GameObject rearBumper = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        rearBumper.name = "BumperRear";
         rearBumper.transform.parent = parent.transform;
         rearBumper.transform.localPosition = new Vector3(0, 0.3f, -2.2f) * carConfig.scale;
+        rearBumper.transform.localScale = new Vector3(2.4f, 0.3f, 0.2f) * carConfig.scale;
 
-        var pbRear = ProBuilderMesh.Create(rearBumper, PrimitiveType.Cube);
-        pbRear.transform.localScale = new Vector3(2.4f, 0.3f, 0.2f) * carConfig.scale;
-
-        ApplyMaterial(pbRear, Color.gray);
-        pbRear.Refresh();
+        RemoveCollider(rearBumper);
+        ApplyMaterial(rearBumper, Color.gray);
     }
 
-    private void ApplyMaterial(ProBuilderMesh pb, Color color)
+    private void RemoveCollider(GameObject obj)
+    {
+        Collider collider = obj.GetComponent<Collider>();
+        if (collider != null)
+            DestroyImmediate(collider);
+    }
+
+    private void ApplyMaterial(GameObject obj, Color color)
     {
         Material mat = new Material(Shader.Find("Standard"));
         mat.color = color;
-        pb.GetComponent<Renderer>().material = mat;
+        obj.GetComponent<Renderer>().material = mat;
     }
 
-    private void ApplyGlassMaterial(ProBuilderMesh pb)
+    private void ApplyGlassMaterial(GameObject obj)
     {
         Material mat = new Material(Shader.Find("Standard"));
         mat.color = new Color(0.7f, 0.9f, 1f, 0.5f);
@@ -252,7 +203,7 @@ public class ProBuilderCarGenerator : MonoBehaviour
         mat.EnableKeyword("_ALPHABLEND_ON");
         mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
         mat.renderQueue = 3000;
-        pb.GetComponent<Renderer>().material = mat;
+        obj.GetComponent<Renderer>().material = mat;
     }
 
     private void AddAnimator(GameObject carRoot)
@@ -272,5 +223,4 @@ public class ProBuilderCarGenerator : MonoBehaviour
             controller.clickAnimationDuration = 0.5f;
         }
     }
-    #endif
 }

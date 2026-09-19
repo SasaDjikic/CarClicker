@@ -3,9 +3,9 @@ using System.Collections;
 
 public class CarController : MonoBehaviour
 {
-    [SerializeField] private Animator animator;
-    [SerializeField] private float baseSpeed = 5f;
-    [SerializeField] private float clickAnimationDuration = 0.5f;
+    [SerializeField] public Animator animator;
+    [SerializeField] public float baseSpeed = 5f;
+    [SerializeField] public float clickAnimationDuration = 0.5f;
 
     private float _currentVisualSpeed = 0f;
     private float _targetSpeed = 0f;

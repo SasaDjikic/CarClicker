@@ -57,7 +57,11 @@ public class CarGeneratorWindow : EditorWindow
             generator = CreateTemp();
         }
 
-        generator.carConfig = carConfig;
+        generator.carConfig.type = carConfig.type;
+        generator.carConfig.bodyColor = carConfig.bodyColor;
+        generator.carConfig.wheelColor = carConfig.wheelColor;
+        generator.carConfig.scale = carConfig.scale;
+
         GameObject car = generator.GenerateCar();
 
         if (car != null)

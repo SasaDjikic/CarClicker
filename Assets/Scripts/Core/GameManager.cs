@@ -28,8 +28,8 @@ public class GameManager : MonoBehaviour
     {
         CurrencySystem = GetComponent<CurrencySystem>();
         InputManager = GetComponent<InputManager>();
-        CarController = FindObjectOfType<CarController>();
-        UIManager = FindObjectOfType<UIManager>();
+        CarController = FindFirstObjectByType<CarController>();
+        UIManager = FindFirstObjectByType<UIManager>();
 
         if (CurrencySystem == null)
             CurrencySystem = gameObject.AddComponent<CurrencySystem>();

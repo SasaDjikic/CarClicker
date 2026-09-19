@@ -9,7 +9,7 @@ public class UIManager : MonoBehaviour
     {
         if (pointsDisplay == null)
         {
-            pointsDisplay = FindObjectOfType<TextMeshProUGUI>();
+            pointsDisplay = FindFirstObjectByType<TextMeshProUGUI>();
         }
     }
 
